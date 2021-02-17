@@ -23,42 +23,37 @@ def sim_spath(H,i,j):
     except:
         res=1.0
 
-    if i == j:
-        res = 1.0
-
     return(res)
 
-def matriz_sim_path(H,nos,base,avaliacao,df_avaliacao):
+def matriz_sim_path(H,base,avaliacao,df_avaliacao):
     #u=metrica
     #n = len(nos)
 
     m = []
     if avaliacao == '1':
-
         #print(df_avaliacao[['c1','c2']])
         for index, row in df_avaliacao.iterrows():
-
             res = sim_spath(H, row['c1'], row['c2'])
             m.append([row['c1'], row['c2'],row['res_in'], round(res, 4)])
             #print(row['c1'], row['c2'],row['res_in'],res)
 
+        m = pd.DataFrame(m)
+        m.columns = ['c1', 'c2', 'res_in', 'res_calc']
+
     else:
-        for i in nos:
-            for j in nos:
+        for i in list(H.nodes):
+            for j in list(H.nodes):
                 res = sim_spath(H, i, j)
                 #print(i, j, round(res, 4))
-                m.append([i, j, '',round(res, 4)])
+                m.append([i, j, round(res, 4)])
 
-
-    m = pd.DataFrame(m)
-    m.columns = ['c1', 'c2', 'res_in', 'res_calc']
+        m = pd.DataFrame(m)
+        m.columns = ['c1', 'c2', 'res_calc']
 
     #m = m.pivot_table(2, 0, 1, fill_value=0)
-
-    #m.to_csv('./data_out/'+'matrix_sim_path_'+str(base), index=True)
-    m.to_csv('./data_out/' + str(base) + '_01_lista_sim_path', index=False)
-    #print('Matriz de resultados: '+'./data_out/' + 'matrix_sim_path_' + str(base))
-    print('Lista de resultados: ' + './data_out/' + str(base)+ '_01_lista_sim_path')
+    nome_arq = str(base).replace('.graph', '')
+    m.to_csv('./data_out/' + nome_arq + '_sim_path.csv', index=False)
+    print('Lista de resultados: ' + './data_out/' + nome_arq + '_sim_path.csv')
     return(m)
 
 ###################################################################
@@ -66,7 +61,7 @@ def matriz_sim_path(H,nos,base,avaliacao,df_avaliacao):
 
 def sim_wup(G, i, j):
     # definindo o no raiz da arvore
-    root = "owl.Thing"
+    root = "id.138875005"
 
     # calculando o Least Common Subsumer (Ancestor)
     LCS = nx.lowest_common_ancestor(G, i, j)
@@ -77,69 +72,44 @@ def sim_wup(G, i, j):
     depth_node1 = shortest_path_length(H, root, i)
     depth_node2 = shortest_path_length(H, root, j)
 
-    #print(i, j, LCS)
-    #print(i, j, depth_lcs)
-    #print(i, j, depth_node1)
-    #print(i, j, depth_node2)
-
     try:
         sim_wup = (2 * depth_lcs) / (depth_node1 + depth_node2)
     except ZeroDivisionError:
         sim_wup = 0
-    #print(sim_wup)
-
-    if i == j:
-        sim_wup = 1.0
 
     return(sim_wup)
 
-def matriz_sim_wup(G, nos, base ,avaliacao,df_avaliacao):
+def matriz_sim_wup(G, base ,avaliacao,df_avaliacao):
 
-    #m = []
-    #for i in nos:
-     #   for j in nos:
-      #      res = sim_wup(G, i, j)
-
-            #res=round(res,1)
-            #print(i, j, round(res, 4))
-            #m.append([i, j, round(res, 4)])
-
+    #u=metrica
+    #n = len(nos)
 
     m = []
     if avaliacao == '1':
-
         #print(df_avaliacao[['c1','c2']])
-        u = 0
         for index, row in df_avaliacao.iterrows():
-
-            #print(row)
-            res = sim_wup(G, row['c1'], row['c2'])
+            res = sim_spath(G, row['c1'], row['c2'])
             m.append([row['c1'], row['c2'],row['res_in'], round(res, 4)])
             #print(row['c1'], row['c2'],row['res_in'],res)
-            u=u+1
-            print(u)
 
+        m = pd.DataFrame(m)
+        m.columns = ['c1', 'c2', 'res_in', 'res_calc']
 
     else:
-        u=0
-        for i in nos:
-            for j in nos:
-
-                res = sim_wup(G, i, j)
+        for i in list(G.nodes):
+            for j in list(G.nodes):
+                res = sim_spath(G, i, j)
                 #print(i, j, round(res, 4))
-                m.append([i, j, '',round(res, 4)])
-                u=u+1
-                print(u)
+                m.append([i, j, round(res, 4)])
 
+        m = pd.DataFrame(m)
+        m.columns = ['c1', 'c2', 'res_calc']
 
-
-    m = pd.DataFrame(m)
     #m = m.pivot_table(2, 0, 1, fill_value=0)
-
-    m.to_csv('./data_out/' + str(base) + '_02_lista_sim_wup', index=False)
-    #m.to_csv('./data_out/'+'matrix_sim_wup_'+str(base), index=True)
-    print('Lista de resultados: '+'./data_out/' +  str(base) + '_02_lista_sim_wup')
-    return()
+    nome_arq = str(base).replace('.graph', '')
+    m.to_csv('./data_out/' + nome_arq + '_sim_wup.csv', index=False)
+    print('Lista de resultados: ' + './data_out/' + nome_arq + '_sim_wup.csv')
+    return(m)
 
 ###################################################################
 # Medida de similaridade Sim_lch
@@ -163,10 +133,6 @@ def sim_lch(G, i, j):
         sim_lch = 1.0
     else:
         sim_lch = -math.log10(lch)
-
-
-    if i == j:
-        sim_lch = 1.0
 
     #print('sim_lch'+str(sim_lch))
 
@@ -207,9 +173,9 @@ def matriz_sim_lch(G, nos, base,avaliacao,df_avaliacao):
     m = pd.DataFrame(m)
     #m = m.pivot_table(2, 0, 1, fill_value=0)
 
-    m.to_csv('./data_out/' +  str(base) + '_03_lista_sim_lch', index=False)
+    m.to_csv('./data_out/' +  str(base) + '_lista_sim_lch', index=True)
     #m.to_csv('./data_out/'+'matrix_sim_lch_'+str(base), index=True)
-    print('Lista de resultados: '+'./data_out/' +  str(base) + '_03_lista_sim_lch')
+    print('Lista de resultados: '+'./data_out/' +  str(base) + '_lista_sim_lch')
     return(m)
 
 
@@ -282,88 +248,57 @@ def sim_lin(G, i, j , lcs):
     except ZeroDivisionError:
         sim_lin = 1
 
-    if i == j:
-        sim_lin = 1.0
-
     return sim_lin
 
+
 #Matriz de similaridade Lin
-def matriz_sim_lin(G, nos, base, avaliacao, df_avaliacao):
+def matriz_sim_lin(G, nos, base):
     m = []
-    #s = []
+    s = []
 
-    #print(avaliacao)
+    lista=[]
+    for x in nos:
+        lista.append(x)
 
-    if avaliacao == '1':
+    #print(lista)
 
-        #print(df_avaliacao[['c1','c2']])
+    w = 0
+    for i in lista:
+        u=0
+        for j in lista:
 
-        for index, row in df_avaliacao.iterrows():
-            lcs = nx.lowest_common_ancestor(G, row['c1'], row['c2'])
-
+            lcs = nx.lowest_common_ancestor(G, i, j)
             #print('*****************************************************')
             #print('node_i:'+str(i))
             #print('node_j:'+str(j))
             #print('node_lcs:' + str(lcs))
             #print(' ')
 
-            res = sim_lin(G, row['c1'], row['c2'], lcs)
+            res = sim_lin(G, i, j, lcs)
 
             #print('sim_lin<<<<<<<<<<<<<<<<<' + str(res))
 
-            m.append([row['c1'], row['c2'], round(res, 4)])
+            s.append([i, j, res])
+            m.append([i, j, res])
 
-            #u = u + 1
-            # print('#:' + str(w) + str('|') + '#:' + str(u))
-            # print('')
-        #w = w + 1
+            u = u + 1
+            #print('#:' + str(w) + str('|') + '#:' + str(u))
+            #print('')
+        w=w+1
+        #time.sleep(1)
 
-        #m.append([row['c1'], row['c2'],row['res_in'], round(res, 4)])
-        #print(row['c1'], row['c2'],row['res_in'],res)
-
-
-    else:
-        lista = []
-        for x in nos:
-            lista.append(x)
-
-        w = 0
-        for i in lista:
-            u = 0
-            for j in lista:
-                lcs = nx.lowest_common_ancestor(G, i, j)
-                # print('*****************************************************')
-                # print('node_i:'+str(i))
-                # print('node_j:'+str(j))
-                # print('node_lcs:' + str(lcs))
-                # print(' ')
-
-                res = sim_lin(G, i, j, lcs)
-
-                # print('sim_lin<<<<<<<<<<<<<<<<<' + str(res))
-
-                #s.append([i, j, res])
-                m.append([i, j, round(res, 4)])
-
-                u = u + 1
-                # print('#:' + str(w) + str('|') + '#:' + str(u))
-                # print('')
-            w = w + 1
-            # time.sleep(1)
-
-    m = pd.DataFrame(m)
-
-    #print(m)
+    s = pd.DataFrame(s)
+    s.append([i, j, res])
 
     #m = m.pivot_table(2, 0, 1, fill_value=0)
 
-    m.to_csv('./data_out/' + str(base) + '_04_lista_sim_IC_lin', index=False)
+    m.to_csv('./data_out/' + str(base) + '_lista_sim_IC_lin', index=True)
     #m.to_csv('./data_out/'+'matrix_sim_IC_lin_'+str(base), index=True)
 
     print('*****************************************************')
-    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_04_lista_sim_IC_lin')
+    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_lista_sim_IC_lin')
 
-    return(res)
+    return(s)
 
 
 ###################################################################
@@ -376,41 +311,30 @@ def sim_resnik(G, node1, node2):
 
     sim_res = information_content(G, lcs)
 
-    if node1 == node2:
-        sim_res = 1.0
-
     return sim_res
 
 #Matriz de similaridade Lin
-def matriz_sim_resnik(G, nos, base,avaliacao,df_avaliacao):
+def matriz_sim_resnik(G, nos, base):
     m = []
     s = []
+    for i in nos:
+        for j in nos:
+            res = sim_resnik(G, i, j)
 
-    if avaliacao == '1':
+            #print(i, j, res)
 
-        #print(df_avaliacao[['c1','c2']])
-        for index, row in df_avaliacao.iterrows():
-            #print(row)
-            res = sim_resnik(G, row['c1'], row['c2'])
-            m.append([row['c1'], row['c2'],row['res_in'], round(res, 4)])
-            #print(row['c1'], row['c2'],row['res_in'],res)
+            s.append([i, j, res])
+            m.append([i, j, res])
 
-
-    else:
-        for i in nos:
-            for j in nos:
-                res = sim_resnik(G, i, j)
-
-                # print(i, j, res)
-
-                m.append([i, j, round(res, 4)])
+    s = pd.DataFrame(s)
+    s.append([i, j, res])
 
     m = pd.DataFrame(m)
     #m = m.pivot_table(2, 0, 1, fill_value=0)
 
-    m.to_csv('./data_out/' + str(base) + '_05_Lista_sim_IC_resnik', index=False)
+    m.to_csv('./data_out/' + str(base) + '_lista_sim_IC_resnik', index=True)
     #m.to_csv('./data_out/'+'matrix_sim_IC_resnik_'+str(base), index=True)
-    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_05_Lista_sim_IC_resnik')
+    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_Lista_sim_IC_resnik')
 
     return(s)
 
@@ -449,42 +373,33 @@ def sim_jcn(G, i, j):
     except ZeroDivisionError:
         sim_jcn = 1
 
-    if i == j:
-        sim_jcn = 1.0
-
     return sim_jcn
 
 
-#Matriz de similaridade jcn
-def matriz_sim_jcn(G, nos, base, avaliacao, df_avaliacao):
+#Matriz de similaridade Lin
+def matriz_sim_jcn(G, nos, base):
     m = []
     s = []
+    for i in nos:
+        for j in nos:
 
-    if avaliacao == '1':
+            res = sim_jcn(G, i, j)
 
-        print(df_avaliacao[['c1','c2']])
-        for index, row in df_avaliacao.iterrows():
-            res = sim_jcn(G, row['c1'], row['c2'])
-            m.append([row['c1'], row['c2'],row['res_in'], round(res, 4)])
-            #print(row['c1'], row['c2'],row['res_in'],res)
+            #print('*******************************')
+            #print(i, j, res)
+            #print('*******************************')
 
-    else:
-        for i in nos:
-            for j in nos:
+            s.append([i, j, res])
+            m.append([i, j, res])
 
-                res = sim_jcn(G, i, j)
-
-                #print('*******************************')
-                #print(i, j, res)
-                #print('*******************************')
-
-                m.append([i, j, round(res, 4)])
+    s = pd.DataFrame(s)
+    s.append([i, j, res])
 
     m = pd.DataFrame(m)
     #m = m.pivot_table(2, 0, 1, fill_value=0)
 
-    m.to_csv('./data_out/' +  str(base) + '_06_lista_sim_jcn', index=False)
+    m.to_csv('./data_out/' +  str(base) + '_lista_sim_IC_jcn', index=True)
     #m.to_csv('./data_out/'+'matrix_sim_IC_jcn_'+str(base), index=True)
-    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_06_lista_sim_jcn')
+    print('Lista de similaridades: '+'./data_out/' +  str(base) + '_lista_sim_IC_lin')
 
     return(s)
